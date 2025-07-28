@@ -19,6 +19,12 @@ As camadas mais externas podem depender das internas, mas nunca o contrário.
 
 ## Camadas da Arquitetura
 
+Para cada projeto da solução possui um arquivo README dedicado, cuidadosamente elaborado para apresentar de forma clara e completa sua estrutura interna. Nestes arquivos, você encontrará:
+
+- A descrição dos padrões adotados
+
+- A explicação das responsabilidades de cada componente
+
 ### Core (Domínio e Casos de Uso)
 
 - Define as entidades e interfaces de uso da aplicação.
@@ -84,15 +90,12 @@ NomeDoProduto.sln
 ├── NomeDoProduto.Tests.Integration  → Testes de integração (infraestrutura, API, banco, fila etc.)
 ```
 
-## Documentação detalhada
-Cada projeto da solução possui um arquivo README dedicado, cuidadosamente elaborado para apresentar de forma clara e completa sua estrutura interna. Nestes arquivos, você encontrará:
+## Referências
 
-- A descrição dos padrões adotados
+Os seguintes projetos e documentações foram usadas como referência para a produção deste template.
 
-- A explicação das responsabilidades de cada componente
+- [ardalis - CleanArchitecture](https://github.com/ardalis/CleanArchitecture?tab=readme-ov-file#clean-architecture)
 
-- Exemplos práticos de classes e suas utilizações
+- [Clean Architecture - Uncle Bob](https://blog.cleancoder.com/uncle-bob/2011/11/22/Clean-Architecture.html)
 
-- Orientações sobre como reutilizar e expandir os recursos existentes
-
-Essa documentação tem como objetivo garantir entendimento técnico aprofundado e acelerar a produtividade dos desenvolvedores envolvidos.
+- [Clean Architecture - Microsoft](https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures)
