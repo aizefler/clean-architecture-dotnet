@@ -2,15 +2,15 @@ Contexto de Arquitetura de Sistemas usando Clean Architecture em .NET
 ## Objetivo
 Definir uma arquitetura de referência baseada nos princípios da Clean Architecture, aplicada ao ecossistema .NET, visando:
 
-Alta manutenibilidade e testabilidade
+- Alta manutenibilidade e testabilidade
 
-Baixo acoplamento e alta coesão entre camadas
+- Baixo acoplamento e alta coesão entre camadas
 
-Clareza na separação de responsabilidades
+- Clareza na separação de responsabilidades
 
-Facilidade de evolução e extensão da aplicação
+- Facilidade de evolução e extensão da aplicação
 
-Suporte a testes unitários e integração contínua
+- Suporte a testes unitários e integração contínua
 
 ## Visão Geral da Clean Architecture
 A Clean Architecture proposta por Robert C. Martin (Uncle Bob) tem como premissa central a inversão de dependência, onde as regras de negócio não conhecem detalhes de implementação de infraestrutura.
@@ -19,37 +19,56 @@ As camadas mais externas podem depender das internas, mas nunca o contrário.
 
 ## Camadas da Arquitetura
 
+Para cada projeto da solução possui um arquivo README dedicado, cuidadosamente elaborado para apresentar de forma clara e completa sua estrutura interna. Nestes arquivos, você encontrará:
+
+- A descrição dos padrões adotados
+
+- A explicação das responsabilidades de cada componente
+
 ### Core (Domínio e Casos de Uso)
 
-Define as entidades e interfaces de uso da aplicação.
+- Define as entidades e interfaces de uso da aplicação.
 
-Independe de frameworks, bancos de dados ou interfaces de usuário.
+- Independe de frameworks, bancos de dados ou interfaces de usuário.
 
-Exemplo: regras de negócio, validações de domínio.
+- Exemplo: regras de negócio, validações de domínio.
+
+[Acesso a documentação desta camada](https://github.com/aizefler/clean-architecture-dotnet/blob/main/src/TodoApp.Core/README.md)
 
 ### Application Services (Casos de Uso Concretos)
 
-Implementa os casos de uso definidos na camada de Core.
+- Implementa os casos de uso definidos na camada de Core.
 
-Orquestra o domínio e delega chamadas para infraestrutura por meio de interfaces.
+- Orquestra o domínio e delega chamadas para infraestrutura por meio de interfaces.
+
+[Acesso a documentação desta camada](https://github.com/aizefler/clean-architecture-dotnet/blob/main/src/TodoApp.Application/README.md)
 
 ### Infrastructure (Infraestrutura)
 
-Implementações concretas de repositórios, serviços externos, acesso a dados.
+- Implementações concretas de repositórios, serviços externos, acesso a dados.
 
-Pode ser dividida em subprojetos, como: .Infrastructure.Data.SqlServer, .Infrastructure.Data.Services, etc.
+- Pode ser dividida em subprojetos, como: .Infrastructure.Data.SqlServer, .Infrastructure.Data.Services, etc.
+
+[Acesso a documentação desta camada - Bus](https://github.com/aizefler/clean-architecture-dotnet/tree/main/src/TodoApp.Infrastructure.Broker.AzureServiceBus/README.md)
+
+[Acesso a documentação desta camada - Data Services](https://github.com/aizefler/clean-architecture-dotnet/tree/main/src/TodoApp.Infrastructure.Data.Services/README.md)
+
+[Acesso a documentação desta camada - SQL Server](https://github.com/aizefler/clean-architecture-dotnet/tree/main/src/TodoApp.Infrastructure.Data.SqlServer/README.md)
 
 ### API (Interface de Entrada)
 
-Projeto de API exposto ao consumidor (REST ou gRPC, por exemplo).
+- Projeto de API exposto ao consumidor (REST ou gRPC, por exemplo).
 
-Deve ser o mais fino possível, apenas roteando requisições para os Application Services.
+- Deve ser o mais fino possível, apenas roteando requisições para os Application Services.
 
-Pode usar Minimal APIs, Controllers ou Endpoints dedicados.
+- Pode usar Minimal APIs, Controllers ou Endpoints dedicados.
+
+[Acesso a documentação desta camada](https://github.com/aizefler/clean-architecture-dotnet/blob/main/src/TodoApp.Api/README.md)
 
 ## Organização de Projetos na Solution
 Organização Final da Solution com Clean Architecture (.NET)
 
+```
 NomeDoProduto.sln
 │
 ├── NomeDoProduto.Api  → Interface pública (API REST/gRPC)
@@ -69,16 +88,14 @@ NomeDoProduto.sln
 ├── NomeDoProduto.Tests.Unit  → Testes unitários (Core + Application)
 │
 ├── NomeDoProduto.Tests.Integration  → Testes de integração (infraestrutura, API, banco, fila etc.)
+```
 
-## Documentação detalhada
-Cada projeto da solução possui um arquivo README dedicado, cuidadosamente elaborado para apresentar de forma clara e completa sua estrutura interna. Nestes arquivos, você encontrará:
+## Referências
 
-A descrição dos padrões adotados
+Os seguintes projetos e documentações foram usadas como referência para a produção deste template.
 
-A explicação das responsabilidades de cada componente
+- [ardalis - CleanArchitecture](https://github.com/ardalis/CleanArchitecture?tab=readme-ov-file#clean-architecture)
 
-Exemplos práticos de classes e suas utilizações
+- [Clean Architecture - Uncle Bob](https://blog.cleancoder.com/uncle-bob/2011/11/22/Clean-Architecture.html)
 
-Orientações sobre como reutilizar e expandir os recursos existentes
-
-Essa documentação tem como objetivo garantir entendimento técnico aprofundado e acelerar a produtividade dos desenvolvedores envolvidos.
+- [Clean Architecture - Microsoft](https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures)
