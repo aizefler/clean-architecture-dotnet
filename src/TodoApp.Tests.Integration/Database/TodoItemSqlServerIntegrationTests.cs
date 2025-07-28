@@ -1,0 +1,230 @@
+using FluentAssertions;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Net;
+using System.Net.Http.Json;
+using Testcontainers.MsSql;
+using TodoApp.Application.TodoItemAggregate.Commands.Dtos;
+using TodoApp.Core.Common;
+using TodoApp.Core.Common.Events;
+using TodoApp.Core.Entities;
+using TodoApp.Infrastructure.Data.SqlServer;
+using TodoApp.Tests.Integration.Setup;
+
+namespace TodoApp.Tests.Integration.Database;
+
+[Collection("SqlServer")]
+public class TodoItemSqlServerIntegrationTests : IClassFixture<SqlServerTestFixture>, IDisposable
+{
+    private readonly SqlServerTestFixture _fixture;
+    private readonly WebApplicationFactory<Program> _factory;
+    private readonly HttpClient _client;
+    private readonly IServiceScope _scope;
+    private readonly AppDbContext _dbContext;
+
+    public TodoItemSqlServerIntegrationTests(SqlServerTestFixture fixture)
+    {
+        _fixture = fixture;
+        
+        _factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    // Remove o DbContext configurado
+                    services.RemoveAll(typeof(DbContextOptions<AppDbContext>));
+                    services.RemoveAll(typeof(AppDbContext));
+
+                    // Adiciona DbContext com SQL Server real via Testcontainer
+                    services.AddDbContext<AppDbContext>(options =>
+                    {
+                        options.UseSqlServer(_fixture.ConnectionString);
+                        options.EnableSensitiveDataLogging();
+                    });
+
+                    // Mocks para serviços externos
+                    services.RemoveAll<IBusPublisher>();
+                    services.RemoveAll<IBusBacthPublisher>();
+                    services.AddScoped<IBusPublisher, MockBusPublisher>();
+                    services.AddScoped<IBusBacthPublisher, MockBusBacthPublisher>();
+                    
+                    services.RemoveAll<IUserContext>();
+                    services.AddScoped<IUserContext, MockUserContext>();
+                });
+                
+                builder.UseEnvironment("Testing");
+            });
+
+        _client = _factory.CreateClient();
+        _client.DefaultRequestHeaders.Add("x-id-token", CreateValidTestToken());
+        
+        _scope = _factory.Services.CreateScope();
+        _dbContext = _scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        
+        // Aplica migrations e limpa dados
+        _dbContext.Database.Migrate();
+        CleanDatabase();
+    }
+
+    [Fact]
+    public async Task CreateTodoItem_WithRealSqlServer_ShouldPersistCorrectly()
+    {
+        // Arrange
+        var todoList = new TodoList { Title = "SQL Server Test List" };
+        _dbContext.TodoLists.Add(todoList);
+        await _dbContext.SaveChangesAsync();
+
+        var request = new TodoItemCreate
+        {
+            ListId = todoList.Id,
+            Title = "SQL Server Integration Test"
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/todolistitem", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        // Verifica persistência real no SQL Server
+        var createdItem = await _dbContext.TodoItems
+            .Include(x => x.List)
+            .FirstOrDefaultAsync(x => x.Title == request.Title);
+
+        createdItem.Should().NotBeNull();
+        createdItem!.Title.Should().Be(request.Title);
+        createdItem.List.Id.Should().Be(todoList.Id);
+        
+        // Verifica que o ID foi gerado pelo SQL Server
+        createdItem.Id.Should().BeGreaterThan(0);
+        
+        // Verifica campos de auditoria
+        createdItem.CreatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromMinutes(1));
+        createdItem.CreatedBy.Should().Be("test-user");
+    }
+
+    [Fact]
+    public async Task CreateTodoItem_ShouldTriggerDomainEventsWithSqlServer()
+    {
+        // Arrange
+        var todoList = new TodoList { Title = "Event Test List" };
+        _dbContext.TodoLists.Add(todoList);
+        await _dbContext.SaveChangesAsync();
+
+        var request = new TodoItemCreate
+        {
+            ListId = todoList.Id,
+            Title = "Event Test Item"
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/todolistitem", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        // Verifica que eventos foram persistidos no SQL Server
+        var messageEvents = await _dbContext.MessageDomainEvents
+            .Where(e => e.Type.Contains("TodoItemCreatedEvent"))
+            .ToListAsync();
+
+        messageEvents.Should().HaveCount(1);
+        messageEvents.First().Topic.Should().Be("TodoItem");
+        messageEvents.First().Processed.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task TransactionIntegrity_WithSqlServer_ShouldRollbackOnError()
+    {
+        // Arrange - Cria uma situação que vai gerar erro após inserção
+        var todoList = new TodoList { Title = "Transaction Test" };
+        _dbContext.TodoLists.Add(todoList);
+        await _dbContext.SaveChangesAsync();
+
+        // Simula um título que vai passar na validação inicial mas falhar depois
+        var request = new TodoItemCreate
+        {
+            ListId = todoList.Id,
+            Title = "Valid Title" // Título válido
+        };
+
+        // Remove a lista após criação para simular erro de integridade
+        _dbContext.TodoLists.Remove(todoList);
+        await _dbContext.SaveChangesAsync();
+
+        // Act & Assert
+        var response = await _client.PostAsJsonAsync("/todolistitem", request);
+        
+        // Deve falhar porque a lista não existe mais
+        response.StatusCode.Should().NotBe(HttpStatusCode.Created);
+
+        // Verifica que nenhum TodoItem foi persistido
+        var itemCount = await _dbContext.TodoItems.CountAsync();
+        itemCount.Should().Be(0);
+    }
+
+    private string CreateValidTestToken()
+    {
+        var header = System.Text.Json.JsonSerializer.Serialize(new { alg = "HS256", typ = "JWT" });
+        var payload = System.Text.Json.JsonSerializer.Serialize(new { 
+            preferred_username = "test@example.com",
+            exp = DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds()
+        });
+        
+        var encodedHeader = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(header));
+        var encodedPayload = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(payload));
+        
+        return $"{encodedHeader}.{encodedPayload}.fake-signature";
+    }
+
+    private void CleanDatabase()
+    {
+        _dbContext.TodoItems.RemoveRange(_dbContext.TodoItems);
+        _dbContext.TodoLists.RemoveRange(_dbContext.TodoLists);
+        _dbContext.MessageDomainEvents.RemoveRange(_dbContext.MessageDomainEvents);
+        _dbContext.SaveChanges();
+    }
+
+    public void Dispose()
+    {
+        _scope?.Dispose();
+        _client?.Dispose();
+        _factory?.Dispose();
+        GC.SuppressFinalize(this);
+    }
+}
+
+public class SqlServerTestFixture : IAsyncLifetime
+{
+    private MsSqlContainer? _msSqlContainer;
+    public string ConnectionString { get; private set; } = string.Empty;
+
+    public async Task InitializeAsync()
+    {
+        _msSqlContainer = new MsSqlBuilder()
+            .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+            .WithPassword("YourStrong@Passw0rd")
+            .Build();
+
+        await _msSqlContainer.StartAsync();
+        ConnectionString = _msSqlContainer.GetConnectionString();
+    }
+
+    public async Task DisposeAsync()
+    {
+        if (_msSqlContainer != null)
+        {
+            await _msSqlContainer.StopAsync();
+            await _msSqlContainer.DisposeAsync();
+        }
+    }
+}
+
+[CollectionDefinition("SqlServer")]
+public class SqlServerTestCollection : ICollectionFixture<SqlServerTestFixture>
+{
+    // Esta classe existe apenas para definir a collection
+}

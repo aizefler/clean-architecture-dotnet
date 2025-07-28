@@ -1,0 +1,26 @@
+@TodoApp.Api_HostAddress = https://localhost:7188
+@Authorization = Bearer xxx
+@XIdToken = xxx
+
+### GET todos os itens da lista
+GET {{TodoApp.Api_HostAddress}}/todolistitem/
+Accept: application/json
+Authorization: {{Authorization}}
+x-id-token: {{XIdToken}}
+
+###
+
+### POST novo item na lista
+POST {{TodoApp.Api_HostAddress}}/todolistitem/
+Content-Type: application/json
+Accept: application/json
+Authorization: {{Authorization}}
+x-id-token: {{XIdToken}}
+
+{
+  "listId": 1,
+  "title": "Novo item",
+  "description": "Descri  o do item"
+}
+
+###

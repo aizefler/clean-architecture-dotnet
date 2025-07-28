@@ -1,0 +1,134 @@
+# Visual Studio
+.vs/
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Bb]uild/
+[Bb]in/
+[Oo]bj/
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+# Mono Auto Generated Files
+mono_crash.*
+# Windows image file caches
+Thumbs.db
+# Folder config file
+Desktop.ini
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+# VS Code
+.vscode/
+# DotCover
+*.dotCover
+# NCrunch
+*.ncrunch*
+.*crunch*.local.xml
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+# NUNIT
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+# Build Results of an ATL Project
+[Dd]ebugPS/
+[Rr]eleasePS/
+# BenchmarkDotNet Artifacts
+BenchmarkDotNet.Artifacts/
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+# StyleCop
+StyleCopReport.xml
+# Files built by Visual Studio
+*_i.c
+*_p.c
+*_h.h
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.pdb
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*.log
+*.vspscc
+*_i.asm
+*_p.asm
+*.cachefile
+# Others
+*.dbmdl
+*.bak
+*.backup
+*.log
+*.dmp
+*.mdf
+*.ldf
+*.ndf
+# DotNet specific
+project.assets.json
+# Rider
+.idea/
+*.sln.iml
+# Local history for Visual Studio
+.localhistory/
+# IIS Express
+. vs/config/applicationhost.config
+# User secrets
+secrets.json
+# JetBrains Rider
+.idea/
+# SonarQube
+.sonar/
+# Coverlet
+coverage*.json
+coverage*.xml
+coverage*.info
+# Azure Pipelines
+.azure-pipelines/
+# Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+# DotTrace
+*.dotTrace
+# TeamCity
+_TeamCity*
+# DotMemory
+*.dotMemory
+# dotCover
+*.dotCover
+# Local History for Visual Studio
+.localhistory/
+# Rider
+.idea/
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+# Mono Auto Generated Files
+mono_crash.*
+# Windows image file caches
+Thumbs.db
+# Folder config file
+Desktop.ini
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+# VS Code
+.vscode/
+/TodoApp.Api/appsettings.Development.json
