@@ -27,17 +27,27 @@ As camadas mais externas podem depender das internas, mas nunca o contrário.
 
 - Exemplo: regras de negócio, validações de domínio.
 
+[Acesso a documentação desta camada](https://github.com/aizefler/clean-architecture-dotnet/blob/main/src/TodoApp.Core/README.md)
+
 ### Application Services (Casos de Uso Concretos)
 
 - Implementa os casos de uso definidos na camada de Core.
 
 - Orquestra o domínio e delega chamadas para infraestrutura por meio de interfaces.
 
+[Acesso a documentação desta camada](https://github.com/aizefler/clean-architecture-dotnet/blob/main/src/TodoApp.Application/README.md)
+
 ### Infrastructure (Infraestrutura)
 
 - Implementações concretas de repositórios, serviços externos, acesso a dados.
 
 - Pode ser dividida em subprojetos, como: .Infrastructure.Data.SqlServer, .Infrastructure.Data.Services, etc.
+
+[Acesso a documentação desta camada - Bus](https://github.com/aizefler/clean-architecture-dotnet/tree/main/src/TodoApp.Infrastructure.Broker.AzureServiceBus/README.md)
+
+[Acesso a documentação desta camada - Data Services](https://github.com/aizefler/clean-architecture-dotnet/tree/main/src/TodoApp.Infrastructure.Data.Services/README.md)
+
+[Acesso a documentação desta camada - SQL Server](https://github.com/aizefler/clean-architecture-dotnet/tree/main/src/TodoApp.Infrastructure.Data.SqlServer/README.md)
 
 ### API (Interface de Entrada)
 
@@ -46,6 +56,8 @@ As camadas mais externas podem depender das internas, mas nunca o contrário.
 - Deve ser o mais fino possível, apenas roteando requisições para os Application Services.
 
 - Pode usar Minimal APIs, Controllers ou Endpoints dedicados.
+
+[Acesso a documentação desta camada](https://github.com/aizefler/clean-architecture-dotnet/blob/main/src/TodoApp.Api/README.md)
 
 ## Organização de Projetos na Solution
 Organização Final da Solution com Clean Architecture (.NET)
