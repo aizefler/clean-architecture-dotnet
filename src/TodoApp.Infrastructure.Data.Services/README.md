@@ -4,7 +4,7 @@ Biblioteca responsável pela integração com serviços externos via HTTP, utili
 Centraliza a configuração de clientes HTTP, handlers de autenticação, serviços de acesso externo e abstrações para comunicação entre camadas.
 
 ## Funcionalidades
-- **Consumo de APIs REST**: Utiliza Refit para facilitar chamadas HTTP tipadas.
+- **Consumo de APIs REST**: Utiliza [Refit] (https://github.com/reactiveui/refit) para facilitar chamadas HTTP tipadas.
 - **Autenticação automática**: Adiciona tokens e cabeçalhos personalizados em cada requisição.
 - **Extensibilidade**: Permite adicionar novos serviços externos facilmente.
 - **Testabilidade**: Serviços desacoplados e facilmente testáveis via mock de HttpClient.
