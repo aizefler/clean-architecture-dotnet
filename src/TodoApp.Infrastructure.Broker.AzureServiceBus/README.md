@@ -20,7 +20,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton(new ServiceBusClient(connectionString));
         services.AddScoped<IBusPublisher, BusPublisher>();
-        services.AddScoped<IBusBacthPublisher, BusBacthPublisher>();
+        services.AddScoped<IBusBatchPublisher, BusBatchPublisher>();
         return services;
     }
 }
@@ -45,10 +45,10 @@ public class BusPublisher : IBusPublisher
 }
 ```
 
-### BusBacthPublisher
+### BusBatchPublisher
 Publica múltiplos eventos de domínio ou mensagens em lote, agrupando por tópico.
 ```csharp
-public class BusBacthPublisher : IBusBacthPublisher
+public class BusBatchPublisher : IBusBatchPublisher
 {
     public async Task SendAsync(IEnumerable<IDomainEvent> domainEvents, CancellationToken cancellationToken = default)
     {
@@ -68,7 +68,7 @@ public class BusBacthPublisher : IBusBacthPublisher
 Infrastructure.Broker.AzureServiceBus/
 ├── ServiceCollectionExtensions.cs
 ├── BusPublisher.cs
-├── BusBacthPublisher.cs
+├── BusBatchPublisher.cs
 ```
 
 

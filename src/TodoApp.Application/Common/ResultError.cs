@@ -22,16 +22,16 @@
          */
 
         // Generic Errors (00)
-        public const string ErroGenerico = "E000000: Ocorreu um erro geral.";
-        public const string UsuarioNaoAutenticado = "E000001: Usuário não autenticado.";
-        public const string UsuarioNaoAutorizado = "E000002: Usuário não possui autorização para executar esta operação.";
-        public const string ErroAoObterPagina = "E000004: A Página {0} é inválida.";
-        public const string CampoObrigatorio = "E000005: O {0} é obrigatório.";
-        public const string CampoMaximoCaracteres = "E000006: O {0} deve ter no máximo {1} caracteres.";
-        public const string CampoInvalido = "E000007: {0} inválido.";
+        public const string GenericError = "E000000: A general error occurred.";
+        public const string UserNotAuthenticated = "E000001: User not authenticated.";
+        public const string UserNotAuthorized = "E000002: User does not have authorization to execute this operation.";
+        public const string InvalidPageError = "E000004: Page {0} is invalid.";
+        public const string FieldRequired = "E000005: {0} is required.";
+        public const string FieldMaxLength = "E000006: {0} must have at most {1} characters.";
+        public const string FieldInvalid = "E000007: {0} is invalid.";
 
         // Health Errors (01)
-        public const string DatabaseNaoDisponivel = "E000100: Base de dados não disponível.";
+        public const string DatabaseUnavailable = "E000100: Database is not available.";
 
         // TodoItem Errors (02)
 

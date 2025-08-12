@@ -23,19 +23,19 @@ public class TodoAppWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll(typeof(DbContextOptions<AppDbContext>));
             services.RemoveAll(typeof(AppDbContext));
 
-            // Adiciona DbContext InMemory para testes rápidos
+            // Adiciona DbContext InMemory para testes rï¿½pidos
             services.AddDbContext<AppDbContext>(options =>
             {
                 options.UseInMemoryDatabase("TestDatabase");
                 options.EnableSensitiveDataLogging();
             });
 
-            // Remove serviços externos
-            services.RemoveAll<IBusBacthPublisher>();
+            // Remove serviï¿½os externos
+            services.RemoveAll<IBusBatchPublisher>();
             services.RemoveAll<IBusPublisher>();
 
-            // Mock para serviços externos
-            services.AddScoped<IBusBacthPublisher, MockBusBacthPublisher>();
+            // Mock para serviï¿½os externos
+            services.AddScoped<IBusBatchPublisher, MockBusBatchPublisher>();
             services.AddScoped<IBusPublisher, MockBusPublisher>();
 
             // Mock para IUserContext

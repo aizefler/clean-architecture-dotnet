@@ -25,19 +25,15 @@ public class TodoItemCompleteWorkflowTests : IntegrationTestBase
         DbContext.TodoLists.Add(todoList);
         await DbContext.SaveChangesAsync();
 
-        var createRequest = new TodoItemCreate
-        {
-            ListId = todoList.Id,
-            Title = "Integration Test Item"
-        };
+        var createRequest = new TodoItemCreate(todoList.Id, "Integration Test Item");
 
         // Act 1: Criar TodoItem via API
         var createResponse = await Client.PostAsJsonAsync("/todolistitem", createRequest);
 
-        // Assert 1: Criação bem-sucedida
+        // Assert 1: Criaï¿½ï¿½o bem-sucedida
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        // Act 2: Verificar persistência no banco
+        // Act 2: Verify database persistence
         var createdItem = await DbContext.TodoItems
             .Include(x => x.List)
             .FirstOrDefaultAsync(x => x.Title == createRequest.Title);
@@ -50,7 +46,7 @@ public class TodoItemCompleteWorkflowTests : IntegrationTestBase
         createdItem.Done.Should().BeFalse();
         createdItem.Priority.Should().Be(PriorityLevel.None);
 
-        // Assert 3: Evento de domínio foi disparado
+        // Assert 3: Evento de domï¿½nio foi disparado
         AssertDomainEventWasPublished<TodoItemCreatedEvent>(e => 
             e.TodoItem.Title == createRequest.Title);
 
@@ -71,11 +67,7 @@ public class TodoItemCompleteWorkflowTests : IntegrationTestBase
     public async Task CreateTodoItem_WithInvalidData_ShouldReturnValidationError()
     {
         // Arrange
-        var invalidRequest = new TodoItemCreate
-        {
-            ListId = 999, // Lista inexistente
-            Title = "" // Título vazio
-        };
+        var invalidRequest = new TodoItemCreate(999, ""); // Lista inexistente, TÃ­tulo vazio
 
         // Act
         var response = await Client.PostAsJsonAsync("/todolistitem", invalidRequest);
@@ -83,12 +75,12 @@ public class TodoItemCompleteWorkflowTests : IntegrationTestBase
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-        // Verifica que nenhum item foi criado
+        // Verify no item was created
         var itemCount = await DbContext.TodoItems.CountAsync();
         itemCount.Should().Be(0);
 
-        // Verifica que nenhum evento foi disparado
-        BusBacthPublisher.PublishedMessageEvents.Should().BeEmpty();
+        // Verify no event was triggered
+        BusBatchPublisher.PublishedMessageEvents.Should().BeEmpty();
     }
 
     [Fact]
@@ -96,13 +88,9 @@ public class TodoItemCompleteWorkflowTests : IntegrationTestBase
     {
         // Arrange
         var clientWithoutAuth = Factory.CreateClient();
-        // Não adiciona o header x-id-token
+        // Nï¿½o adiciona o header x-id-token
 
-        var request = new TodoItemCreate
-        {
-            ListId = 1,
-            Title = "Test"
-        };
+        var request = new TodoItemCreate(1, "Test");
 
         // Act
         var response = await clientWithoutAuth.PostAsJsonAsync("/todolistitem", request);
@@ -114,7 +102,7 @@ public class TodoItemCompleteWorkflowTests : IntegrationTestBase
     [Fact]
     public async Task CompleteWorkflow_WithMultipleItems_ShouldMaintainDataIntegrity()
     {
-        // Arrange - Cria múltiplas listas e itens
+        // Arrange - Cria mï¿½ltiplas listas e itens
         var list1 = new TodoList { Title = "Personal Tasks" };
         var list2 = new TodoList { Title = "Work Tasks" };
         
@@ -123,10 +111,10 @@ public class TodoItemCompleteWorkflowTests : IntegrationTestBase
 
         var requests = new[]
         {
-            new TodoItemCreate { ListId = list1.Id, Title = "Buy groceries" },
-            new TodoItemCreate { ListId = list1.Id, Title = "Walk the dog" },
-            new TodoItemCreate { ListId = list2.Id, Title = "Finish report" },
-            new TodoItemCreate { ListId = list2.Id, Title = "Team meeting" }
+            new TodoItemCreate(list1.Id, "Buy groceries"),
+            new TodoItemCreate(list1.Id, "Walk the dog"),
+            new TodoItemCreate(list2.Id, "Finish report"),
+            new TodoItemCreate(list2.Id, "Team meeting")
         };
 
         // Act - Cria todos os itens
@@ -136,7 +124,7 @@ public class TodoItemCompleteWorkflowTests : IntegrationTestBase
             response.StatusCode.Should().Be(HttpStatusCode.Created);
         }
 
-        // Assert - Verifica integridade dos dados
+        // Assert - Verify data integrity
         var allItems = await GetAsync<List<TodoListItemDto>>("/todolistitem");
         
         allItems.Should().HaveCount(4);
@@ -147,12 +135,12 @@ public class TodoItemCompleteWorkflowTests : IntegrationTestBase
         personalTasks.Should().HaveCount(2);
         workTasks.Should().HaveCount(2);
         
-        // Verifica que todos os eventos foram disparados
-        BusBacthPublisher.PublishedMessageEvents
+        // Verify all events were triggered
+        BusBatchPublisher.PublishedMessageEvents
             .Where(e => e.Type == typeof(TodoItemCreatedEvent).FullName)
             .Should().HaveCount(4);
 
-        // Verifica auditoria
+        // Verify audit
         var dbItems = await DbContext.TodoItems.ToListAsync();
         dbItems.Should().AllSatisfy(item =>
         {

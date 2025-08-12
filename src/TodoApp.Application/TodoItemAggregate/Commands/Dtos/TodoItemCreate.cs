@@ -1,8 +1,3 @@
-﻿namespace TodoApp.Application.TodoItemAggregate.Commands.Dtos
-{
-    public class TodoItemCreate
-    {
-        public int ListId { get; set; }
-        public string Title { get; set; }
-    }
-}
+﻿namespace TodoApp.Application.TodoItemAggregate.Commands.Dtos;
+
+public record TodoItemCreate(int ListId, string Title);

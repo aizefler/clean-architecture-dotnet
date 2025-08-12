@@ -5,15 +5,15 @@ using Microsoft.Extensions.Logging;
 
 namespace TodoApp.Infrastructure.Broker.AzureServiceBus;
 
-public class BusBacthPublisher : IBusBacthPublisher
+public class BusBatchPublisher : IBusBatchPublisher
 {
 
     private readonly ServiceBusClient _client;
     private readonly JsonSerializerOptions _jsonOptions;
-    private readonly ILogger<BusBacthPublisher> _logger;
+    private readonly ILogger<BusBatchPublisher> _logger;
 
-    public BusBacthPublisher(ServiceBusClient client, 
-        ILogger<BusBacthPublisher> logger)
+    public BusBatchPublisher(ServiceBusClient client, 
+        ILogger<BusBatchPublisher> logger)
     {
         _logger = logger;
         _client = client;
@@ -29,7 +29,7 @@ public class BusBacthPublisher : IBusBacthPublisher
 
         if (domainEvents == null || !domainEvents.Any())
         {
-            _logger.LogWarning("Nenhum evento de domínio para enviar.");
+            _logger.LogWarning("No domain events to send.");
             return;
         }
 
@@ -57,7 +57,7 @@ public class BusBacthPublisher : IBusBacthPublisher
 
         if (messageDomainEvents == null || !messageDomainEvents.Any())
         {
-            _logger.LogWarning("Nenhum evento de domínio para enviar.");
+            _logger.LogWarning("No domain events to send.");
             return;
         }
 
@@ -69,7 +69,7 @@ public class BusBacthPublisher : IBusBacthPublisher
         {
             if (string.IsNullOrEmpty(topic))
             {
-                _logger.LogWarning("Tópico vazio ou nulo encontrado. Evento não será enviado.");
+                _logger.LogWarning("Empty or null topic found. Event will not be sent.");
                 continue;
             }
 
@@ -78,7 +78,7 @@ public class BusBacthPublisher : IBusBacthPublisher
             ServiceBusMessageBatch batch = await _sender.CreateMessageBatchAsync(cancellationToken);
 
             var eventsCount = messageDomainEvents.Count(a => a.Topic == topic);
-            _logger.LogInformation("Enviando {eventsCount} eventos de domínio para o tópico {Topic}", eventsCount, topic);
+            _logger.LogInformation("Sending {eventsCount} domain events to topic {Topic}", eventsCount, topic);
 
             foreach (var messageDomainEvent in messageDomainEvents.Where(a => a.Topic == topic))
             {
@@ -97,7 +97,7 @@ public class BusBacthPublisher : IBusBacthPublisher
                     batch = await _sender.CreateMessageBatchAsync(cancellationToken);
 
                     if (!batch.TryAddMessage(message))
-                        throw new InvalidOperationException("Mensagem muito grande para ser adicionada ao batch do BUS.");
+                        throw new InvalidOperationException("Message too large to be added to the BUS batch.");
                 }
             }
 

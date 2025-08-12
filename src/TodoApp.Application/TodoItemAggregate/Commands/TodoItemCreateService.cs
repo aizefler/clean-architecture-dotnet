@@ -33,11 +33,13 @@ public class TodoItemCreateService : ITodoItemCreateService
 
     public async Task CreateAsync(TodoItemCreate todoItemCreate, CancellationToken cancellationToken = default)
     {
-        if (_userRolesContext.IsInRole(RolesConstants.FeatureA))
+        if (!_userRolesContext.IsInRole(RolesConstants.User))
         {
-            _logger.LogTrace("Usuário autorizado a criar TodoItem.");
-            throw new UnauthorizedAccessException(ResultError.UsuarioNaoAutorizado);
+            _logger.LogTrace("User not authorized to create TodoItem.");
+            throw new UnauthorizedAccessException(ResultError.UserNotAuthorized);
         }
+        
+        _logger.LogTrace("User authorized to create TodoItem.");
 
         var todoList = await _repositoryTodoList.GetByIdAsync(todoItemCreate.ListId);
 
@@ -47,12 +49,12 @@ public class TodoItemCreateService : ITodoItemCreateService
         if (!validationResult.IsValid)
         {
             var errorMessages = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
-            _logger.LogTrace("Erros de validações: {Errors}", errorMessages);
+            _logger.LogTrace("Validation errors: {Errors}", errorMessages);
             throw new ValidationException(validationResult.Errors);
         }
 
         todoItem.AddDomainEvent(new TodoItemCreatedEvent(todoItem));
-        _logger.LogInformation("Criado o evento ItemCreated");
+        _logger.LogInformation("Created ItemCreated event");
 
         await _unitOfWork.Repository<TodoItem>().AddAsync(todoItem);
 

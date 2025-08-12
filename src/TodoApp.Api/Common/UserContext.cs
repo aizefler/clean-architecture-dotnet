@@ -20,7 +20,7 @@ namespace TodoApp.Api.Common
             get
             {
                 if (!_httpContextAccessor.HttpContext.Items.TryGetValue("Username", out var _userName) || _userName is null)
-                    throw new InvalidOperationException(ResultError.UsuarioNaoAutenticado);
+                    throw new InvalidOperationException(ResultError.UserNotAuthenticated);
 
                 return _userName.ToString();
             }
@@ -31,7 +31,7 @@ namespace TodoApp.Api.Common
             get
             {
                 if (!_httpContextAccessor.HttpContext.Items.TryGetValue("Email", out var _email) || _email is null)
-                    throw new InvalidOperationException(ResultError.UsuarioNaoAutenticado);
+                    throw new InvalidOperationException(ResultError.UserNotAuthenticated);
 
                 return _email.ToString();  
             }

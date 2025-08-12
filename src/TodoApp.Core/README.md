@@ -67,7 +67,7 @@ public class TodoItem : BaseAuditableEntity<int>
 - **DomainEvent**: Implementação base de evento de domínio, com Id, data e tópico.
 - **IEventHandler<TEvent>**: Contrato para manipuladores de eventos de domínio.
 - **BaseEventHandler<TDomainEvent>**: Implementação base que publica eventos em um barramento.
-- **IBusPublisher / IBusBacthPublisher**: Contratos para publicação de eventos em barramento (individual ou em lote).
+- **IBusPublisher / IBusBatchPublisher**: Contratos para publicação de eventos em barramento (individual ou em lote).
 - **MessageDomainEvent**: Representa eventos de mensagem para integração.
 - **IDomainEventDispatcher / DomainEventDispatcher**: Contrato e implementação para despachar eventos de domínio para seus handlers.
 

@@ -15,20 +15,20 @@ public abstract class IntegrationTestBase : IClassFixture<TodoAppWebApplicationF
     protected readonly IServiceScope Scope;
     protected readonly AppDbContext DbContext;
     protected readonly MockBusPublisher BusPublisher;
-    protected readonly MockBusBacthPublisher BusBacthPublisher;
+    protected readonly MockBusBatchPublisher BusBatchPublisher;
 
     protected IntegrationTestBase(TodoAppWebApplicationFactory factory)
     {
         Factory = factory;
         Client = factory.CreateClient();
         
-        // Adiciona headers de autenticação obrigatórios
+        // Adiciona headers de autenticaï¿½ï¿½o obrigatï¿½rios
         Client.DefaultRequestHeaders.Add("x-id-token", CreateValidTestToken());
         
         Scope = factory.Services.CreateScope();
         DbContext = Scope.ServiceProvider.GetRequiredService<AppDbContext>();
         BusPublisher = (MockBusPublisher)Scope.ServiceProvider.GetRequiredService<IBusPublisher>();
-        BusBacthPublisher = (MockBusBacthPublisher)Scope.ServiceProvider.GetRequiredService<IBusBacthPublisher>();
+        BusBatchPublisher = (MockBusBatchPublisher)Scope.ServiceProvider.GetRequiredService<IBusBatchPublisher>();
         
         // Limpa o banco a cada teste
         CleanDatabase();
@@ -43,13 +43,13 @@ public abstract class IntegrationTestBase : IClassFixture<TodoAppWebApplicationF
         
         // Limpa eventos capturados
         BusPublisher.PublishedEvents.Clear();
-        BusBacthPublisher.PublishedEvents.Clear();
-        BusBacthPublisher.PublishedMessageEvents.Clear();
+        BusBatchPublisher.PublishedEvents.Clear();
+        BusBatchPublisher.PublishedMessageEvents.Clear();
     }
 
     protected virtual string CreateValidTestToken()
     {
-        // Simula um JWT válido para os testes
+        // Simula um JWT vï¿½lido para os testes
         var header = JsonSerializer.Serialize(new { alg = "HS256", typ = "JWT" });
         var payload = JsonSerializer.Serialize(new { 
             preferred_username = "test@example.com",
@@ -88,13 +88,13 @@ public abstract class IntegrationTestBase : IClassFixture<TodoAppWebApplicationF
 
     protected void AssertDomainEventWasPublished<TEvent>() where TEvent : class, IDomainEvent
     {
-        BusBacthPublisher.PublishedMessageEvents
+        BusBatchPublisher.PublishedMessageEvents
             .Should().Contain(e => e.Type == typeof(TEvent).FullName);
     }
 
     protected void AssertDomainEventWasPublished<TEvent>(Func<TEvent, bool> predicate) where TEvent : class, IDomainEvent
     {
-        var events = BusBacthPublisher.PublishedMessageEvents
+        var events = BusBatchPublisher.PublishedMessageEvents
             .Where(e => e.Type == typeof(TEvent).FullName)
             .Select(e => JsonSerializer.Deserialize<TEvent>(e.Content))
             .Where(e => e != null)

@@ -24,7 +24,7 @@ public class MockBusPublisher : IBusPublisher
     }
 }
 
-public class MockBusBacthPublisher : IBusBacthPublisher
+public class MockBusBatchPublisher : IBusBatchPublisher
 {
     public List<IDomainEvent> PublishedEvents { get; } = new();
     public List<MessageDomainEvent> PublishedMessageEvents { get; } = new();

@@ -39,7 +39,7 @@ public class TodoItemValidatorTests
         // Arrange
         var todoList = new TodoList { Title = "Test List" };
         var todoItem = new TodoItem(title, null, PriorityLevel.Medium, null, todoList);
-        var expectedMessage = string.Format(ResultError.CampoObrigatorio, "Title");
+        var expectedMessage = string.Format(ResultError.FieldRequired, "Title");
 
         // Act
         var result = _validator.TestValidate(todoItem);
@@ -56,7 +56,7 @@ public class TodoItemValidatorTests
         var todoList = new TodoList { Title = "Test List" };
         var longTitle = new string('a', 101); // 101 characters
         var todoItem = new TodoItem(longTitle, null, PriorityLevel.Medium, null, todoList);
-        var expectedMessage = string.Format(ResultError.CampoMaximoCaracteres, "Title", 100);
+        var expectedMessage = string.Format(ResultError.FieldMaxLength, "Title", 100);
 
         // Act
         var result = _validator.TestValidate(todoItem);
@@ -105,7 +105,7 @@ public class TodoItemValidatorTests
         // Arrange
         var todoList = new TodoList { Title = "Test List" };
         var todoItem = new TodoItem("Valid Title", null, (PriorityLevel)999, null, todoList); // Invalid enum value
-        var expectedMessage = string.Format(ResultError.CampoInvalido, "Prioridade");
+        var expectedMessage = string.Format(ResultError.FieldInvalid, "Priority");
 
         // Act
         var result = _validator.TestValidate(todoItem);
@@ -120,7 +120,7 @@ public class TodoItemValidatorTests
     {
         // Arrange
         var todoItem = new TodoItem("Valid Title", null, PriorityLevel.Medium, null, null!);
-        var expectedMessage = string.Format(ResultError.CampoObrigatorio, "Lista");
+        var expectedMessage = string.Format(ResultError.FieldRequired, "List");
 
         // Act
         var result = _validator.TestValidate(todoItem);

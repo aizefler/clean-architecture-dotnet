@@ -1,7 +1,3 @@
-﻿namespace TodoApp.Application.TodoItemAggregate.DataServices.Dtos
-{
-    public class TodoItemRequest
-    {
-        public string Title { get; set; }
-    }
-}
+﻿namespace TodoApp.Application.TodoItemAggregate.DataServices.Dtos;
+
+public record TodoItemRequest(string Title);

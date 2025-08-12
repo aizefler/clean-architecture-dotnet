@@ -10,7 +10,7 @@ namespace TodoApp.Infrastructure.Broker.AzureServiceBus
         {
             services.AddSingleton(new ServiceBusClient(connectionString));
             services.AddScoped<IBusPublisher, BusPublisher>();
-            services.AddScoped<IBusBacthPublisher, BusBacthPublisher>();
+            services.AddScoped<IBusBatchPublisher, BusBatchPublisher>();
             return services;
         }
     }

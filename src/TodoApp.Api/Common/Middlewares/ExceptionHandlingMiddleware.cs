@@ -1,53 +1,36 @@
 ﻿using FluentValidation;
 using TodoApp.Application.Common.Dtos;
 
-namespace TodoApp.Api.Common.Middlewares
+namespace TodoApp.Api.Common.Middlewares;
+
+public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
 {
-    public class ExceptionHandlingMiddleware
+    public async Task InvokeAsync(HttpContext context)
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-
-        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+        try
         {
-            _next = next;
-            _logger = logger;
+            await next(context);
         }
-
-        public async Task InvokeAsync(HttpContext context)
+        catch (Exception ex)
         {
-            try
-            {
-                await _next(context);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-                await HandleExceptionAsync(context, ex);
-            }
+            logger.LogError(ex, ex.Message);
+            await HandleExceptionAsync(context, ex);
         }
+    }
 
-        private static async Task HandleExceptionAsync(HttpContext context, Exception ex)
+    private static async Task HandleExceptionAsync(HttpContext context, Exception ex)
+    {
+        context.Response.ContentType = "application/json";
+        
+        var (statusCode, errors) = ex switch
         {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = ex switch
-            {
-                UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
-                ValidationException => StatusCodes.Status400BadRequest,
-                _ => StatusCodes.Status500InternalServerError
-            };
+            UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, new[] { ex.Message }),
+            ValidationException validationEx => (StatusCodes.Status400BadRequest, 
+                validationEx.Errors.Select(e => e.ErrorMessage).ToArray()),
+            _ => (StatusCodes.Status500InternalServerError, new[] { ex.Message })
+        };
 
-            var errors = new string[] { ex.Message };
-
-            if (ex is ValidationException)
-            {
-                var validationException = (ValidationException)ex;
-                errors = validationException.Errors
-                    .Select(e => $"{e.ErrorMessage}")
-                    .ToArray();
-            }
-
-            await context.Response.WriteAsJsonAsync(Result.Failure(errors));
-        }
+        context.Response.StatusCode = statusCode;
+        await context.Response.WriteAsJsonAsync(Result.Failure(errors));
     }
 }

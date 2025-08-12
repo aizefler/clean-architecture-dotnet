@@ -7,13 +7,13 @@ using TodoApp.Core.Common.Events;
 namespace TodoApp.Infrastructure.Data.SqlServer.Common.DomainEvents;
 
 [ExcludeFromCodeCoverage]
-public class BusBacthPublisherInterceptor : SaveChangesInterceptor
+public class BusBatchPublisherInterceptor : SaveChangesInterceptor
 {
-    private readonly IBusBacthPublisher _busBacthPublisher;
+    private readonly IBusBatchPublisher _busBatchPublisher;
 
-    public BusBacthPublisherInterceptor(IBusBacthPublisher busBacthPublisher)
+    public BusBatchPublisherInterceptor(IBusBatchPublisher busBatchPublisher)
     {
-        _busBacthPublisher = busBacthPublisher;
+        _busBatchPublisher = busBatchPublisher;
     }
 
     public override int SavedChanges(SaveChangesCompletedEventData eventData, int result)
@@ -44,6 +44,6 @@ public class BusBacthPublisherInterceptor : SaveChangesInterceptor
             .Select(e => e.Entity)
             .ToList();
 
-        await _busBacthPublisher.SendAsync(messages.ToArray(), cancellationToken);
+        await _busBatchPublisher.SendAsync(messages.ToArray(), cancellationToken);
     }
 }

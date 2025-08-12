@@ -1,10 +1,13 @@
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 using Moq;
+using TodoApp.Application.Common;
 using TodoApp.Application.TodoItemAggregate.Commands;
 using TodoApp.Application.TodoItemAggregate.Commands.Dtos;
 using TodoApp.Application.TodoItemAggregate.Commands.Interfaces;
+using TodoApp.Core.Common;
 using TodoApp.Core.Common.Data;
 using TodoApp.Core.Entities;
 using TodoApp.Core.Events;
@@ -17,6 +20,8 @@ public class TodoItemCreateServiceTests
     private readonly Mock<IValidator<TodoItem>> _mockValidator;
     private readonly Mock<IRepository<TodoList>> _mockTodoListRepository;
     private readonly Mock<IRepository<TodoItem>> _mockTodoItemRepository;
+    private readonly Mock<IUserRolesContext> _mockUserRolesContext;
+    private readonly Mock<ILogger<TodoItemCreateService>> _mockLogger;
     private readonly TodoItemCreateService _service;
 
     public TodoItemCreateServiceTests()
@@ -25,14 +30,22 @@ public class TodoItemCreateServiceTests
         _mockValidator = new Mock<IValidator<TodoItem>>();
         _mockTodoListRepository = new Mock<IRepository<TodoList>>();
         _mockTodoItemRepository = new Mock<IRepository<TodoItem>>();
+        _mockUserRolesContext = new Mock<IUserRolesContext>();
+        _mockLogger = new Mock<ILogger<TodoItemCreateService>>();
         
         _mockUnitOfWork.Setup(u => u.Repository<TodoItem>())
                       .Returns(_mockTodoItemRepository.Object);
 
+        // Setup user roles context to allow creation by default
+        _mockUserRolesContext.Setup(u => u.IsInRole(RolesConstants.User))
+                            .Returns(true);
+
         _service = new TodoItemCreateService(
             _mockUnitOfWork.Object,
             _mockTodoListRepository.Object,
-            _mockValidator.Object);
+            _mockValidator.Object,
+            _mockUserRolesContext.Object,
+            _mockLogger.Object);
     }
 
     [Fact]
@@ -40,7 +53,7 @@ public class TodoItemCreateServiceTests
     {
         // Arrange
         var todoList = new TodoList { Title = "Test List" };
-        var todoItemCreate = new TodoItemCreate { ListId = 1, Title = "Test Item" };
+        var todoItemCreate = new TodoItemCreate(1, "Test Item");
         var validationResult = new ValidationResult();
 
         _mockTodoListRepository.Setup(r => r.GetByIdAsync(It.IsAny<int>()))
@@ -73,7 +86,7 @@ public class TodoItemCreateServiceTests
     {
         // Arrange
         var todoList = new TodoList { Title = "Test List" };
-        var todoItemCreate = new TodoItemCreate { ListId = 1, Title = "" };
+        var todoItemCreate = new TodoItemCreate(1, "");
         var validationErrors = new List<ValidationFailure>
         {
             new ValidationFailure("Title", "Title is required")
@@ -100,7 +113,7 @@ public class TodoItemCreateServiceTests
     public async Task CreateAsync_WithNullTodoList_ShouldStillProcessRequest()
     {
         // Arrange
-        var todoItemCreate = new TodoItemCreate { ListId = 999, Title = "Test Item" };
+        var todoItemCreate = new TodoItemCreate(999, "Test Item");
         var validationResult = new ValidationResult();
 
         _mockTodoListRepository.Setup(r => r.GetByIdAsync(It.IsAny<int>()))
@@ -131,7 +144,7 @@ public class TodoItemCreateServiceTests
     {
         // Arrange
         var todoList = new TodoList { Title = "Test List" };
-        var todoItemCreate = new TodoItemCreate { ListId = 1, Title = "Test Item" };
+        var todoItemCreate = new TodoItemCreate(1, "Test Item");
         var validationResult = new ValidationResult();
         TodoItem? capturedTodoItem = null;
 
@@ -165,7 +178,7 @@ public class TodoItemCreateServiceTests
     {
         // Arrange
         var todoList = new TodoList { Title = "Test List" };
-        var todoItemCreate = new TodoItemCreate { ListId = 1, Title = "Test Item" };
+        var todoItemCreate = new TodoItemCreate(1, "Test Item");
         var validationResult = new ValidationResult();
         var cancellationToken = new CancellationToken();
 

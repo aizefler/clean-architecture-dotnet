@@ -27,7 +27,7 @@ public class AuthHeaderValidationsMiddleware
 
         if (!context.Request.Headers.TryGetValue("x-id-token", out var token))
         {
-            await WriteJsonError(context, ResultError.UsuarioNaoAutenticado);
+            await WriteJsonError(context, ResultError.UserNotAuthenticated);
             return;
         }
 
@@ -41,7 +41,7 @@ public class AuthHeaderValidationsMiddleware
         }
         catch
         {
-            await WriteJsonError(context, ResultError.UsuarioNaoAutenticado);
+            await WriteJsonError(context, ResultError.UserNotAuthenticated);
         }
     }
 

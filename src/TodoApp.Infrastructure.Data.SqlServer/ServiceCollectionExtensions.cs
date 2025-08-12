@@ -22,7 +22,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<DomainEventInterceptor>();
         services.AddScoped<AuditableInterceptor>();
-        services.AddScoped<BusBacthPublisherInterceptor>();
+        services.AddScoped<BusBatchPublisherInterceptor>();
 
         // Add query repositories
         services.AddScoped<ITodoQuery, TodoQueryRepository>();
@@ -39,7 +39,7 @@ public static class ServiceCollectionExtensions
             options.AddInterceptors(
                 serviceProvider.GetRequiredService<DomainEventInterceptor>(),
                 serviceProvider.GetRequiredService<AuditableInterceptor>(),
-                serviceProvider.GetRequiredService<BusBacthPublisherInterceptor>()
+                serviceProvider.GetRequiredService<BusBatchPublisherInterceptor>()
             );
 
             // Enable sensitive data logging in development
